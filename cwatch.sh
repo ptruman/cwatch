@@ -4,11 +4,30 @@
 # All Rights Reserved
 #
 # Use of this scripts is at executors own risk
-#
+
 # Set DEBUG to 1 if you want full sdtdout...
-DEBUG=0
+if [ ! $DEBUG ]; then
+        DEBUG=0
+fi
+
+# Check for Registry ENVs
+if [ ! $DOCKER_REGISTRY ]; then
+        DOCKER_REGISTRY="registry.hub.docker.com"
+fi
+if [ ! $DOCKER_REGISTRY_SERVICE ]; then
+        DOCKER_REGISTRY_SERVICE="registry.docker.io"
+fi
+if [ ! $DOCKER_AUTH_SERVICE ]; then
+        DOCKER_AUTH_SERVICE="auth.docker.io"
+fi
+
+# Instantiate arrays
+UpdateOk=()
+UpdateReq=()
+UpdateQuery=()
 OUTPUT=()
-#
+
+# Output function
 SendOutput()
 {
         OUTPUT+=("$@")
@@ -16,22 +35,21 @@ SendOutput()
                 echo "$@" >> /proc/1/fd/1
         fi
 }
-#
+
 TMPFile=$RANDOM
+
+# Start processing
 StartTime=`date +%s`
 SendOutput "CWATCH >> Starting up...please wait..."
+# Check we have a docker.sock file accessible - we cannot proceed without Docker!
 if [ -S /var/run/docker.sock ]; then
-        # List and count images
+        # List and count images/tags
         Images=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[1]}'`)
         Tags=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[2]}'`)
         ImgCount=${#Images[@]}
         if [ $DEBUG = 1 ]; then
                 SendOutput "CWATCH >> Found a total of $ImgCount images"
         fi
-        # Instantiate arrays
-        UpdateOk=()
-        UpdateReq=()
-        UpdateQuery=()
         # Process each Image
         for (( i=0; i<${#Images[@]}; i++))
         do
@@ -63,12 +81,10 @@ if [ -S /var/run/docker.sock ]; then
                         SendOutput "CWATCH >> Ext Digest : $RunningRepoDigest"
                 fi
                 # Setup OAUTH request to query Docker Hub
-                AUTH_SERVICE="registry.docker.io"
-                AUTH_REGISTRY="registry.hub.docker.com"
                 AUTH_SCOPE="repository:$Image:pull"
-                AUTH_TOKEN=$(curl -fsSL "https://auth.docker.io/token?service=$AUTH_SERVICE&scope=$AUTH_SCOPE" | jq --raw-output '.token')
+                AUTH_TOKEN=$(curl -fsSL "https://$DOCKER_AUTH_SERVICE/token?service=$DOCKER_REGISTRY_SERVICE&scope=$AUTH_SCOPE" | jq --raw-output '.token')
                 # Pull most receent image/tag digest
-                LiveDigestRaw=`curl -fsSL  -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $AUTH_TOKEN" "$AUTH_REGISTRY/v2/$Image/manifests/$Tag" | jq --raw-output '.config.digest'`
+                LiveDigestRaw=`curl -fsSL  -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -H "Authorization: Bearer $AUTH_TOKEN" "$DOCKER_REGISTRY/v2/$Image/manifests/$Tag" | jq --raw-output '.config.digest'`
                 LiveDigest=`echo $LiveDigestRaw | awk '{split($0,LiveDigestArr,":"); print LiveDigestArr[2]}'`
                 # Munge any weird HTTP header chars back out...
                 LiveDigestEd=`echo "$LiveDigest" | sed "s/[^[:alnum:]-]//g"`
