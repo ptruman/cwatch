@@ -24,7 +24,7 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 * DEBUG - Can be set to 1 for verbose output.  Defaults to *0*
 * DOCKER_REGISTRY - Set this to whatever Docker Registry host you need.  Defaults to *registry.hub.docker.com*
 * DOCKER_REGISTRY_SERVICE - Set this to whatever Docker Registry service host you need. Defaults to *registry.docker.io*
-* DOCKER_AUTH_SERVICE - Set this to whatevre Docker Auth host you need. Defaults to *auth.docker.io*
+* DOCKER_AUTH_SERVICE - Set this to whatever Docker Auth host you need. Defaults to *auth.docker.io*
 
 # Usage
 
