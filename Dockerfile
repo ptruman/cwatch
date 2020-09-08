@@ -10,7 +10,7 @@ LABEL maintainer=peter.truman+dh@gmail.com
 
 # Grab pre-requisites
 RUN apk update \
-        apk upgrade
+        apk upgrade \
         apk add docker msmtp curl jq \
         curl https://raw.githubusercontent.com/ptruman/cwatch/master/cwatch.sh > /usr/sbin/cwatch.sh \
         chmod a+rx /usr/sbin/cwatch.sh \
