@@ -1,6 +1,6 @@
 ##!/bin/bash
-# CWATCH (Docker Image Checker) V4.1
-# (C) 2020 Functional Simplicity & Tech Bobbins
+# CWATCH (Docker Image Checker) V4.2
+# (C) 2020 Peter Truman
 # All Rights Reserved
 #
 # Use of this scripts is at executors own risk
