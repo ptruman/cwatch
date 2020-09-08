@@ -127,5 +127,6 @@ for i in "${OUTPUT[@]}"
 do
         echo "$i"
         echo "$i" >> /proc/1/fd/1
+        echo "$i" >> /var/log/cwatch
 done
 
