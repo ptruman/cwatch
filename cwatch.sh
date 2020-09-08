@@ -1,5 +1,5 @@
 ##!/bin/bash
-# CWATCH (Docker Image Checker) V4.0
+# CWATCH (Docker Image Checker) V4.1
 # (C) 2020 Functional Simplicity & Tech Bobbins
 # All Rights Reserved
 #
@@ -9,16 +9,18 @@
 DEBUG=0
 OUTPUT=()
 #
-SendOutput ()
+SendOutput()
 {
-        $OUTPUT+=( $1 )
-        echo "$1" >> /proc/1/fd/1 
+        OUTPUT+=("$@")
+        if [ -S /var/run/docker.sock ]; then
+                echo "$@" >> /proc/1/fd/1
+        fi
 }
-# 
+#
 TMPFile=$RANDOM
 StartTime=`date +%s`
 SendOutput "CWATCH >> Starting up...please wait..."
-if [ -f /var/run/docker.sock ]; then
+if [ -S /var/run/docker.sock ]; then
         # List and count images
         Images=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[1]}'`)
         Tags=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[2]}'`)
@@ -92,21 +94,22 @@ if [ -f /var/run/docker.sock ]; then
         SendOutput "CWATCH >> Found ${#UpdateReq[@]} of $ImgCount containers that need an update.  ${#UpdateOk[@]} are up to date."
         # Updates required
         if [ ${#UpdateReq[@]} > 0 ]; then
-                echo "CWATCH >> Images needing an update :"
+                SendOutput "CWATCH >> Images needing an update :"
                 for i in "${UpdateReq[@]}"
                 do
                         SendOutput "  >> $i"
                 done
         fi
 else
-        SendOutput "CWATCH >> /var/run/docker.sock not found - please ensure file is available/mounted for the CWATCH container"
-        SendOutput "CWATCH >> Terminating."
+        echo "CWATCH >> /var/run/docker.sock not found - please ensure file is available/mounted for the CWATCH container."
+        echo "CWATCH >> Terminating."
 fi
 EndTime=`date +%s`
 TotalTime=`expr $EndTime - $StartTime`
 SendOutput "CWATCH >> Finished.  Took $TotalTime seconds."
-for i in "${OUTPUT}"
+for i in "${OUTPUT[@]}"
 do
-        echo $i
+        echo "$i"
+        echo "$i" >> /proc/1/fd/1
 done
 
