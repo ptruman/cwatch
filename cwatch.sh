@@ -7,16 +7,24 @@
 #
 # Set DEBUG to 1 if you want full sdtdout...
 DEBUG=0
+OUTPUT=()
 #
+SendOutput ()
+{
+        $OUTPUT+=( $1 )
+        echo "$1" >> /proc/1/fd/1 
+}
+# 
+TMPFile=$RANDOM
 StartTime=`date +%s`
-echo "CWATCH >> Starting up...please wait..."
+SendOutput "CWATCH >> Starting up...please wait..."
 if [ -f /var/run/docker.sock ]; then
         # List and count images
         Images=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[1]}'`)
         Tags=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[2]}'`)
         ImgCount=${#Images[@]}
         if [ $DEBUG = 1 ]; then
-                echo "CWATCH >> Found a total of $ImgCount images"
+                SendOutput "CWATCH >> Found a total of $ImgCount images"
         fi
         # Instantiate arrays
         UpdateOk=()
@@ -32,15 +40,15 @@ if [ -f /var/run/docker.sock ]; then
                 Tag=${Tags[$i]}
                 if [ $Tag = "<none>" ]; then
                         if [ $DEBUG = 1 ]; then
-                                echo "CWATCH >> $Image shows no tag - assuming 'latest'"
+                                SendOutput "CWATCH >> $Image shows no tag - assuming 'latest'"
                         fi
                         Tag="latest"
                 fi
                 # Nice debug output
                 if [ $DEBUG = 1 ]; then
-                        echo "CWATCH >> Now checking $Image"
-                        echo "CWATCH >> Image Name : $Image"
-                        echo "CWATCH >> Image Tag  : $Tag"
+                        SendOutput "CWATCH >> Now checking $Image"
+                        SendOutput "CWATCH >> Image Name : $Image"
+                        SendOutput "CWATCH >> Image Tag  : $Tag"
                 fi
                 # Check we have a repository AND an image (script does not handle images sans repositories yet...
                 if [[ ! $Image =~ "/" ]]; then
@@ -50,7 +58,7 @@ if [ -f /var/run/docker.sock ]; then
                 RunningRepoDigestRaw=`docker image inspect $Image:$Tag | jq -r '.[0].Id'`
                 RunningRepoDigest=`echo $RunningRepoDigestRaw | awk '{split($0,RepoDigestArr,":"); print RepoDigestArr[2]}'`
                 if [ $DEBUG = 1 ]; then
-                        echo "CWATCH >> Ext Digest : $RunningRepoDigest"
+                        SendOutput "CWATCH >> Ext Digest : $RunningRepoDigest"
                 fi
                 # Setup OAUTH request to query Docker Hub
                 AUTH_SERVICE="registry.docker.io"
@@ -63,38 +71,42 @@ if [ -f /var/run/docker.sock ]; then
                 # Munge any weird HTTP header chars back out...
                 LiveDigestEd=`echo "$LiveDigest" | sed "s/[^[:alnum:]-]//g"`
                 if [ $DEBUG = 1 ]; then
-                        echo "CWATCH >> Live Digest: $LiveDigestEd"
+                        SendOutput "CWATCH >> Live Digest: $LiveDigestEd"
                 fi
                 # Check if SHA256 digests match
                 if [[ $RunningRepoDigest = $LiveDigestEd ]]; then
                         # If match - nothing required
                         if [ $DEBUG = 1 ]; then
-                                echo "CWATCH >> $Image:Tag - NO UPDATE NEEDED "
+                                SendOutput "CWATCH >> $Image:Tag - NO UPDATE NEEDED "
                         fi
                         UpdateOk+=("$Image:$Tag")
                 else
                         # If mismatch, flag for update
                         if [ $DEBUG = 1 ]; then
-                                echo "CWATCH >> $Image:$Tag - UPDATE REQUIRED"
+                                SendOutput "CWATCH >> $Image:$Tag - UPDATE REQUIRED"
                         fi
                         UpdateReq+=("$Image:$Tag")
                 fi
         done
         # Dump findings
-        echo "CWATCH >> Found ${#UpdateReq[@]} of $ImgCount containers that need an update.  ${#UpdateOk[@]} are up to date."
+        SendOutput "CWATCH >> Found ${#UpdateReq[@]} of $ImgCount containers that need an update.  ${#UpdateOk[@]} are up to date."
         # Updates required
         if [ ${#UpdateReq[@]} > 0 ]; then
                 echo "CWATCH >> Images needing an update :"
                 for i in "${UpdateReq[@]}"
                 do
-                        echo "  >> $i"
+                        SendOutput "  >> $i"
                 done
         fi
 else
-        echo "CWATCH >> /var/run/docker.sock not found - please ensure file is available/mounted for the CWATCH container"
-        echo "CWATCH >> Terminating."
+        SendOutput "CWATCH >> /var/run/docker.sock not found - please ensure file is available/mounted for the CWATCH container"
+        SendOutput "CWATCH >> Terminating."
 fi
 EndTime=`date +%s`
 TotalTime=`expr $EndTime - $StartTime`
-echo "CWATCH >> Finished.  Took $TotalTime seconds."
+SendOutput "CWATCH >> Finished.  Took $TotalTime seconds."
+for i in "${OUTPUT}"
+do
+        echo $i
+done
 
