@@ -70,7 +70,7 @@ SendOutput()
 	fi
 }
 
-TMPFile=$RANDOM
+TMPFile="/tmp/$RANDOM"
 
 # Start processing
 StartTime=`date +%s`
@@ -272,10 +272,6 @@ else
         SendOutput D "CWATCH >> /var/run/docker.sock not found - please ensure file is available/mounted for the CWATCH container."
         SendOutput D "CWATCH >> Terminating."
 fi
-EndTime=`date +%s`
-TotalTime=`expr $EndTime - $StartTime`
-OutDate=`date`
-SendOutput S "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)"
 
 # Provide output
 for i in "${OUTPUT[@]}"
@@ -291,5 +287,18 @@ do
 	fi 
 	# Log to /var/log/cwatch either way
         echo "$i" >> /var/log/cwatch
+	# Should we be emailing?
+	if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
+	        echo "$i" >> $TMPFile
+	fi
 done
+if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
+	SendOutput D "CWATCH >> Attempting to send email to $CWATCH_EMAIL_FROM"
+	cat $TMPFile | msmtp $CWATCH_EMAIL_FROM
+fi 
+
+EndTime=`date +%s`
+TotalTime=`expr $EndTime - $StartTime`
+OutDate=`date`
+SendOutput S "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)"
 
