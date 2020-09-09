@@ -309,6 +309,7 @@ EndTime=`date +%s`
 TotalTime=`expr $EndTime - $StartTime`
 OutDate=`date`
 SendOutput S "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)"
+echo "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)" >> $TMPFile
 
 # Send email
 if [ "$CWATCH_ENABLE_EMAIL" = 1 ]; then

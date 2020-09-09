@@ -17,8 +17,10 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 <b>Volumes</b>
 
 * /var/run/docker.sock:/var/run/docker.sock:ro
-* /tmp/cwatch.txt:/var/log/cwatch *(optional)*
-
+* /tmp/cwatch.txt:/var/log/cwatch (optional)
+* /etc/localtime:/etc/localtime:ro (optional *but* ensures correct timestamps)
+* /etc/timezone:/etc/timezone:ro (optional *but* ensures correct timestamps)
+* /etc/msmtprc:/etc/msmtprc:re (optional, if you have a functional msmtprc already)
 <b>Environment</b>
 
 * DEBUG - Can be set to 1 for verbose output.  Defaults to *0*
@@ -43,6 +45,14 @@ You can see the output via *docker logs cwatch* or in the logs window if you use
 It also writes logs to /var/log/cwatch - so you can mount that as a bind mount (see above) if you want a local file
 
 Every 1am, CWATCH will run and check each container for a newer Docker Registry image, and advise if one is available.
+
+# Label Based Checking
+CWATCH can read the following <b>labels</b> from running *containers* to INCLUDE or EXCLUDE their images from checking, although for this to work you <b>must</b> specify the environment variable BEHAVIOUR to be *INCLUDE* or *EXCLUDE* for them to be useful.
+* CWATCH.INCLUDE - set to TRUE on a container you want to check the image for
+* CWATCH.EXCLUDE - set to TRUE on a container you want to *not* check the image for
+
+This means you do not need to set *every* Container with the labels, just the ones you want to explicitly include, or exclude.
+The default BEHAVIOUR is ALL which will check ALL containers.
 
 # Notes
 
