@@ -1,5 +1,5 @@
 ##!/bin/bash
-# CWATCH (Docker Image Checker) V4.2
+# CWATCH (Docker Image Checker) V4.2.1
 # (C) 2020 Peter Truman
 # All Rights Reserved
 #
@@ -122,7 +122,8 @@ else
 fi
 EndTime=`date +%s`
 TotalTime=`expr $EndTime - $StartTime`
-SendOutput "CWATCH >> Finished.  Took $TotalTime seconds."
+OutDate=`date`
+SendOutput "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)"
 for i in "${OUTPUT[@]}"
 do
         echo "$i"
