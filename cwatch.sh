@@ -1,4 +1,4 @@
-##!/bin/bash
+#!/bin/bash
 # CWATCH (Docker Image Checker) V4.2.1
 # (C) 2020 Peter Truman
 # All Rights Reserved
