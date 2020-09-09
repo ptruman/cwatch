@@ -22,6 +22,16 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 <b>Environment</b>
 
 * DEBUG - Can be set to 1 for verbose output.  Defaults to *0*
+* BEHAVIOUR - Set to INCLUDE, EXCLUDE or ALL. Default to *ALL*
+* CWATCH_ENABLE_EMAIL - Set this to 1 to enable msmtp based email
+* CWATCH_EMAIL_TYPE - Set this to SMTP or GMAIL.  Used by SMTP type only.  (no default set)
+* CWATCH_EMAIL_HOST - Set this to the required SMTP email host or IP. (no default set)
+* CWATCH_EMAIL_PORT - Set this to the required SMTP email port, i.e. 25. (no default set)
+* CWATCH_EMAIL_TLS - Set this to ON or OFF.  Used by SMTP type only.  Defaults to *OFF*
+* CWATCH_EMAIL_STARTTLS - Set this to ON of OFF. Used by SMTP type only. Defaults to *OFF*
+* CWATCH_EMAIL_FROM - Set this to the email address email should come FROM and go TO (single address).  (no default set)
+* CWATCH_EMAIL_GMAILUSER - Set this to the GMail address being used to provide GMail services.  Used by GMAIL type only. (no default set)
+* CWATCH_EMAIL_GMAILPASSWORD - Set this to the GMail account password being used to provide GMail services.  Used by GMAIL type only. (no default set)
 * DOCKER_REGISTRY - Set this to whatever Docker Registry host you need.  Defaults to *registry.hub.docker.com*
 * DOCKER_REGISTRY_SERVICE - Set this to whatever Docker Registry service host you need. Defaults to *registry.docker.io*
 * DOCKER_AUTH_SERVICE - Set this to whatever Docker Auth host you need. Defaults to *auth.docker.io*
