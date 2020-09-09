@@ -6,6 +6,7 @@
 # Use of this scripts is at executors own risk
 
 # Set DEBUG to 1 if you want full sdtdout...
+CWATCHVer=4.2.1
 if [ ! $DEBUG ]; then
         DEBUG=0
 fi
@@ -40,7 +41,7 @@ TMPFile=$RANDOM
 
 # Start processing
 StartTime=`date +%s`
-SendOutput "CWATCH >> Starting up...please wait..."
+SendOutput "CWATCH >> Starting up...please wait...($CWATCHVer)"
 # Check we have a docker.sock file accessible - we cannot proceed without Docker!
 if [ -S /var/run/docker.sock ]; then
         # List and count images/tags
@@ -109,7 +110,8 @@ if [ -S /var/run/docker.sock ]; then
         # Dump findings
         SendOutput "CWATCH >> Found ${#UpdateReq[@]} of $ImgCount containers that need an update.  ${#UpdateOk[@]} are up to date."
         # Updates required
-        if [ ${#UpdateReq[@]} > 0 ]; then
+	NumUpdates=${#UpdateReq[@]}
+        if [ "$NumUpdates" -gt 0 ]; then
                 SendOutput "CWATCH >> Images needing an update :"
                 for i in "${UpdateReq[@]}"
                 do
