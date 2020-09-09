@@ -6,7 +6,7 @@
 # Use of this scripts is at executors own risk. 
 # See the Licence at https://github.com/ptruman/cwatch/blob/master/LICENSE or in the local LICENSE file as appropriate
 
-CWATCHVer=5.0
+CWATCHVer=5.1
 
 ##### PROCESS DEFAULT ENVIRONMENT VARIABLES #####
 
@@ -40,8 +40,8 @@ fi
 IsContainer=0
 FirstPID=`ps -aef | grep -v PID | sort | head -1| awk '{print $1}'`
 FirstProc=`ps -aef | grep -v PID | sort | head -1| awk '{print $4}'`
-if [ "$1stPID" == 1 ]; then
-        if [ "$1stProc" == "crond" ]; then
+if [ $FirstPID = 1 ]; then
+        if [ $FirstProc = "crond" ]; then
                 IsContainer=1
         fi
 fi
@@ -60,9 +60,11 @@ SendOutput()
 	if [ $DEBUG = 1 ]; then
 		if [ $IsContainer = 1 ]; then
                         echo "$RemOutput" >> /proc/1/fd/1
+			echo "$RemOutput" 
                 else
                         echo "$RemOutput"
                 fi
+		OUTPUT+=("$RemOutput")
 	else
 		if [ $OutputType = "S" ]; then
 			OUTPUT+=("$RemOutput")
@@ -103,6 +105,7 @@ if [ ! -f /etc/msmtprc ]; then
 	if [ $CWATCH_ENABLE_EMAIL ]; then
 	        if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
 	                if [ $CWATCH_EMAIL_TYPE = "SMTP" ]; then
+				SendOutput D "CWATCH >> Creating email template."
 				# Check for TLS settings
 		                if [ ! $CWATCH_EMAIL_TLS ]; then
 		                        CWATCH_EMAIL_TLS=off
@@ -114,7 +117,7 @@ if [ ! -f /etc/msmtprc ]; then
 		                else
 		                        $CWATCH_EMAIL_TLS=${CWATCH_EMAIL_STARTTLS,,}
 		                fi
-	                        echo << EOF >> /etc/msmtprc
+	                        cat << EOF > /etc/msmtprc
 ### Automatically generated on container start. See documentation on how to set!
 account default
 host $CWATCH_EMAIL_HOST
@@ -128,13 +131,15 @@ tls_certcheck off
 EOF
 	                fi
 	                if [ $CWATCH_EMAIL_TYPE = "GMAIL" ]; then
-	                        echo << EOF >> /etc/msmtprc
+	                        cat << EOF > /etc/msmtprc
 ### Automatically generated on container start. See documentation on how to set!
 account default
 host smtp.gmail.com
 port 587
 from $CWATCH_EMAIL_FROM
 user $CWATCH_EMAIL_GMAILUSER
+tls on
+tls_starttls on
 password $CWATCH_EMAIL_GMAILPASSWORD
 EOF
 	                fi
@@ -274,31 +279,40 @@ else
 fi
 
 # Provide output
-for i in "${OUTPUT[@]}"
+MDate=`date`
+if [ "$CWATCH_ENABLE_EMAIL" = 1 ]; then
+	echo "From: $CWATCH_EMAIL_FROM" >> $TMPFile
+	echo "To: $CWATCH_EMAIL_FROM" >> $TMPFile
+	echo "Subject: CWATCH Output ($MDate) - $NumUpdates image(s) to update" >> $TMPFile
+fi
+
+for (( i=0; i<${#OUTPUT[@]}; i++))
 do
 	# Log to stdout (for CLI)
-        echo "$i"
 	# Log to Docker log if within a container
 	if [ $IsContainer = 1 ]; then
 		# Only write to Docker log if DEBUG has not already been written
 		if [ $DEBUG = 0 ]; then
-		        echo "$i" >> /proc/1/fd/1
+		        echo "${OUTPUT[$i]}" >> /proc/1/fd/1
 		fi
 	fi 
 	# Log to /var/log/cwatch either way
-        echo "$i" >> /var/log/cwatch
+        echo "${OUTPUT[$i]}" >> /var/log/cwatch
 	# Should we be emailing?
 	if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
-	        echo "$i" >> $TMPFile
+	#        SendOutput D "CWATCH >> Spooling email"
+		echo "${OUTPUT[$i]}" >> $TMPFile
 	fi
 done
-if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
-	SendOutput D "CWATCH >> Attempting to send email to $CWATCH_EMAIL_FROM"
-	cat $TMPFile | msmtp $CWATCH_EMAIL_FROM
-fi 
 
 EndTime=`date +%s`
 TotalTime=`expr $EndTime - $StartTime`
 OutDate=`date`
 SendOutput S "CWATCH >> Finished.  Took $TotalTime seconds. ($OutDate)"
+
+# Send email
+if [ "$CWATCH_ENABLE_EMAIL" = 1 ]; then
+        SendOutput D "CWATCH >> Attempting to send email to $CWATCH_EMAIL_FROM"
+        cat $TMPFile | msmtp $CWATCH_EMAIL_FROM
+fi
 
