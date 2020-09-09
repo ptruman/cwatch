@@ -138,9 +138,9 @@ host smtp.gmail.com
 port 587
 from $CWATCH_EMAIL_FROM
 user $CWATCH_EMAIL_GMAILUSER
-password $CWATCH_EMAIL_GMAILPASSWORD
 tls on
-auth on
+tls_starttls on
+password $CWATCH_EMAIL_GMAILPASSWORD
 EOF
 	                fi
 	        fi
