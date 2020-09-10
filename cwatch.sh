@@ -114,6 +114,11 @@ if [ ! -f /etc/msmtprc ]; then
 	# No email config found - is email enabled?
 	if [ $CWATCH_ENABLE_EMAIL ]; then
 	        if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
+			if [ $CWATCH_EMAIL_FROM ]; then
+				CWATCH_EMAIL_FROM=`echo $CWATCH_EMAIL_FROM | sed s/\"//g;`
+			else
+				SendOutput D "CWATCH >> Email enabled - no CWATCH_EMAIL_FROM set - email will fail!"
+			fi
 	                if [ $CWATCH_EMAIL_TYPE = "SMTP" ]; then
 				SendOutput D "CWATCH >> Creating email template."
 				# Check for TLS settings
@@ -125,7 +130,7 @@ if [ ! -f /etc/msmtprc ]; then
 		                if [ ! $CWATCH_EMAIL_STARTTLS ]; then
 		                        CWATCH_EMAIL_STARTTLS=off
 		                else
-		                        CWATCH_EMAIL_TLS=${CWATCH_EMAIL_STARTTLS,,}
+		                        CWATCH_EMAIL_STARTTLS=${CWATCH_EMAIL_STARTTLS,,}
 		                fi
 	                        cat << EOF > /etc/msmtprc
 ### Automatically generated on container start. See documentation on how to set!
