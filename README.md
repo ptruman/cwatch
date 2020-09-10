@@ -21,6 +21,7 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 * /etc/localtime:/etc/localtime:ro (optional *but* ensures correct timestamps)
 * /etc/timezone:/etc/timezone:ro (optional *but* ensures correct timestamps)
 * /etc/msmtprc:/etc/msmtprc:re (optional, if you have a functional msmtprc already)
+
 <b>Environment</b>
 
 * DEBUG - Can be set to 1 for verbose output.  Defaults to *0*
