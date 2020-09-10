@@ -6,7 +6,7 @@
 # Use of this scripts is at executors own risk. 
 # See the Licence at https://github.com/ptruman/cwatch/blob/master/LICENSE or in the local LICENSE file as appropriate
 
-CWATCHVer=5.2
+CWATCHVer=5.3
 
 ##### PROCESS DEFAULT ENVIRONMENT VARIABLES #####
 
@@ -60,7 +60,7 @@ SendOutput()
 	if [ $DEBUG = 1 ]; then
 		if [ $IsContainer = 1 ]; then
                         echo "$RemOutput" >> /proc/1/fd/1
-			echo "$RemOutput" 
+			echo "$RemOutput"
                 else
                         echo "$RemOutput"
                 fi
@@ -69,6 +69,13 @@ SendOutput()
 		if [ $OutputType = "S" ]; then
 			OUTPUT+=("$RemOutput")
 		fi 
+		if [ $1 ]; then
+			# We have a parameter, thus likely running on CLI (local)
+			if [ $OutputType = "S" ]; then
+				echo $RemOutput
+			fi
+		fi
+
 	fi
 }
 
@@ -76,6 +83,9 @@ TMPFile="/tmp/$RANDOM"
 
 # Start processing
 StartTime=`date +%s`
+if [ $1 ]; then
+	SendOutput D "CWATCH >> CLI argument found - forcing STDOUT"
+fi
 SendOutput S "CWATCH >> Starting up...please wait...($CWATCHVer)"
 
 # Check where we are...
@@ -150,24 +160,26 @@ fi
 # Check we have a docker.sock file accessible - we cannot proceed without Docker!
 if [ -S /var/run/docker.sock ]; then
         if [ $1 ]; then
-                SendOutput S "CWATCH >> cmdline argument received - checking for an image/tag combo."
+                SendOutput S "CWATCH >> CLI argument received - checking for a valid library/image:tag argument."
                 if [ `echo "$1" | awk -F: '{print $2}'` ]; then
-                        RepoImg=`echo "$1" | awk -F\/ '{print $1}'`
+                        RepoImg=`echo "$1" | awk -F: '{print $1}'`
 			if [[ "$RepoImg" =~ "/" ]]; then
 				Repo=`echo "$1" | awk -F\/ '{print $1}'`
-				Img=`echo "$1" | awk -F\/ '{print $2}'`
+				Img=`echo "$1" | awk -F\/ '{print $2}' | awk -F: '{print $1}'`
 			else
 				Repo="library"
 				Img=`echo "$1" | awk -F\/ '{print $1}'`
 			fi
-                        Tag=`echo "$1" | awk -F\/ '{print $2}'`
-			echo "Found $Repo $Img $Tag"
+                        Tag=`echo "$1" | awk -F: '{print $2}'`
+			Images+=( "$Repo/$Img" )
+			Tags+=( "$Tag" )
+			SendOutput S "CWATCH >> CLI argument VALID - restricting scope to single image $Repo/$Img:$Tag"
                 else
-                        SendOutput S "CWATCH >> No Img/Tag combo found in the supplied argument."
+                        SendOutput S "CWATCH >> CLI argument INVALID - no library/image:tag combo found in the supplied argument."
 			Images=()
                 fi
-                #Img=`echo $1 awk -F\/ '{print $2}' | awk -F\: '{print $1}'`
-                #Tag=`echo $1 awk -F\/ '{print $2}' | awk -F\: '{print $2}'`
+		IncImgCount=1
+		ExcImgCount=0
         else
 	        # List and count images/tags
 	        Images=(`docker image ls | grep -v REPOSITORY | awk '{split($0,ImgArr," "); print ImgArr[1]}'`)
@@ -299,9 +311,11 @@ do
 	# Log to /var/log/cwatch either way
         echo "${OUTPUT[$i]}" >> /var/log/cwatch
 	# Should we be emailing?
-	if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
-	#        SendOutput D "CWATCH >> Spooling email"
-		echo "${OUTPUT[$i]}" >> $TMPFile
+	if [ $CWATCH_ENABLE_EMAIL ]; then
+		if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
+		#        SendOutput D "CWATCH >> Spooling email"
+			echo "${OUTPUT[$i]}" >> $TMPFile
+		fi
 	fi
 done
 
