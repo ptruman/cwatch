@@ -6,7 +6,7 @@
 # Use of this scripts is at executors own risk. 
 # See the Licence at https://github.com/ptruman/cwatch/blob/master/LICENSE or in the local LICENSE file as appropriate
 
-CWATCHVer=5.1
+CWATCHVer=5.2
 
 ##### PROCESS DEFAULT ENVIRONMENT VARIABLES #####
 
@@ -110,12 +110,12 @@ if [ ! -f /etc/msmtprc ]; then
 		                if [ ! $CWATCH_EMAIL_TLS ]; then
 		                        CWATCH_EMAIL_TLS=off
 		                else
-		                        $CWATCH_EMAIL_TLS=${CWATCH_EMAIL_TLS,,}
+		                        CWATCH_EMAIL_TLS=${CWATCH_EMAIL_TLS,,}
 		                fi
 		                if [ ! $CWATCH_EMAIL_STARTTLS ]; then
 		                        CWATCH_EMAIL_STARTTLS=off
 		                else
-		                        $CWATCH_EMAIL_TLS=${CWATCH_EMAIL_STARTTLS,,}
+		                        CWATCH_EMAIL_TLS=${CWATCH_EMAIL_STARTTLS,,}
 		                fi
 	                        cat << EOF > /etc/msmtprc
 ### Automatically generated on container start. See documentation on how to set!

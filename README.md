@@ -29,6 +29,7 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 * CWATCH_EMAIL_TYPE - Set this to SMTP or GMAIL.  Used by SMTP type only.  (no default set)
 * CWATCH_EMAIL_HOST - Set this to the required SMTP email host or IP. (no default set)
 * CWATCH_EMAIL_PORT - Set this to the required SMTP email port, i.e. 25. (no default set)
+* CWATCH_EMAIL_DOMAIN - Set this to the domain you send from (or your SMTP server expects). (no default set)
 * CWATCH_EMAIL_TLS - Set this to ON or OFF.  Used by SMTP type only.  Defaults to *OFF*
 * CWATCH_EMAIL_STARTTLS - Set this to ON of OFF. Used by SMTP type only. Defaults to *OFF*
 * CWATCH_EMAIL_FROM - Set this to the email address email should come FROM and go TO (single address).  (no default set)
