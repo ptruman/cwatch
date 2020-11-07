@@ -3,7 +3,7 @@ FROM alpine
 MAINTAINER peter.truman+dh@gmail.com
 
 # Set base labels
-LABEL CWATCH=V5.1
+LABEL CWATCH=V5.2
 LABEL maintainer=peter.truman+dh@gmail.com
 
 # Set environment
