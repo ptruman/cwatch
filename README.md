@@ -42,7 +42,7 @@ It *assumes* that you are using the standard Docker Hub Registry for your images
 
 # Usage (Docker Image/Container)
 
-Once installed, CWATCH will run every 1am, outputting to it's docker log.
+Once installed, CWATCH will run every 2am, outputting to it's docker log.
 You can see the output via *docker logs cwatch* or in the logs window if you use Portainer.
 It also writes logs to /var/log/cwatch - so you can mount that as a bind mount (see above) if you want a local file
 
