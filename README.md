@@ -73,5 +73,4 @@ Specifying a(ny) command line parameter will override INCLUDE/EXCLUDE logic.
 
 # Notes
 
-* msmtp support is coming shortly (to send emails)
 * Images with no obvious tag will default to "latest" - this may not be desirable in all instances
