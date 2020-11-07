@@ -15,6 +15,6 @@ RUN apk update && \
         curl https://raw.githubusercontent.com/ptruman/cwatch/master/cwatch.sh > /usr/sbin/cwatch.sh && \
         chmod a+rx /usr/sbin/cwatch.sh && \
         touch /var/log/cwatch && \
-        echo "0       1       *       *       *       /usr/sbin/cwatch.sh > /var/log/cwatch" >> /etc/crontabs/root
+        echo "0       2       *       *       *       /usr/sbin/cwatch.sh > /var/log/cwatch" >> /etc/crontabs/root
 
 CMD ["crond", "-f"]
