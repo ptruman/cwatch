@@ -114,6 +114,12 @@ if [ ! -f /etc/msmtprc ]; then
 	# No email config found - is email enabled?
 	if [ $CWATCH_ENABLE_EMAIL ]; then
 	        if [ $CWATCH_ENABLE_EMAIL = 1 ]; then
+		        if [ -f $CWATCH_EMAIL_PORT ]; then
+				CWATCH_EMAIL_PORT=25
+			fi
+			if [ -f $CWATCH_EMAIL_DOMAIN ]; then
+				CWATCH_EMAIL_DOMAIN=local
+			fi
 			if [ $CWATCH_EMAIL_FROM ]; then
 				CWATCH_EMAIL_FROM=`echo $CWATCH_EMAIL_FROM | sed s/\"//g;`
 			else
